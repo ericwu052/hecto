@@ -9,7 +9,7 @@ pub struct Terminal {
 impl Terminal {
     pub fn default() -> Result<Self, std::io::Error> {
 	let size = termion::terminal_size()?;
-	Ok(self {
+	Ok(Self {
 	    size: Size {
 		width: size.0,
 		height: size.1
