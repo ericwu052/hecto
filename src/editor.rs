@@ -64,7 +64,7 @@ impl Editor {
 	    if let Ok(doc) = doc {
 		doc
 	    } else {
-		initial_status = format!("ERR: Coult not open file: {}", file_name);
+		initial_status = format!("ERR: Could not open file: {}", file_name);
 		Document::default()
 	    }
 	} else {
@@ -121,7 +121,7 @@ impl Editor {
 	    Key::Ctrl('q') => {
 		if self.quit_times > 0 && self.document.is_dirty() {
 		    self.status_message = StatusMessage::from(format!(
-			"WARNING! File has unsaved changes. Press Ctrl-Q {} more timese to quit.",
+			"WARNING! File has unsaved changes. Press Ctrl-Q {} more times to quit.",
 			self.quit_times
 		    ));
 		    self.quit_times -= 1;
