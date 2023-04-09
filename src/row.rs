@@ -9,7 +9,8 @@ use unicode_segmentation::UnicodeSegmentation;
 pub struct Row {
     string: String,
     highlighting: Vec<highlighting::Type>,
-    len: usize,
+    pub is_highlighted: bool,
+    len: usize
 }
 
 impl From<&str> for Row {
@@ -17,6 +18,7 @@ impl From<&str> for Row {
         Self {
             string: String::from(slice),
             highlighting: Vec::new(),
+            is_highlighted: false,
             len: slice.graphemes(true).count(),
         }
     }
@@ -118,10 +120,12 @@ impl Row {
 
         self.string = row;
         self.len = length;
+        self.is_highlighted = false;
         Self {
             string: splitted_row,
             len: splitted_length,
-            highlighting: Vec::new(),
+            is_highlighted: false,
+            highlighting: Vec::new()
         }
     }
     pub fn as_bytes(&self) -> &[u8] {
@@ -165,7 +169,7 @@ impl Row {
         None
     }
 
-    fn highlight_match(&mut self, word: Option<&str>) {
+    fn highlight_match(&mut self, word: &Option<String>) {
         if let Some(word) = word {
             if word.is_empty() {
                 return;
@@ -402,11 +406,22 @@ impl Row {
     pub fn highlight(
         &mut self,
         opts: &HighlightingOptions,
-        word: Option<&str>,
+        word: &Option<String>,
         start_with_comment: bool
     ) -> bool {
-        self.highlighting = Vec::new();
         let chars: Vec<char> = self.string.chars().collect();
+        if self.is_highlighted && word.is_none() {
+            if let Some(hl_type) = self.highlighting.last() {
+                if *hl_type == highlighting::Type::MultilineComment
+                    && self.string.len() > 1
+                    && self.string[self.string.len() - 2..] == *"*/"
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        self.highlighting = Vec::new();
         let mut index = 0;
         let mut in_ml_comment = start_with_comment;
         if in_ml_comment {
@@ -442,6 +457,7 @@ impl Row {
         if in_ml_comment && &self.string[self.string.len().saturating_sub(2)..] != "*/" {
             return true;
         }
+        self.is_highlighted = true;
         false
     }
 }
